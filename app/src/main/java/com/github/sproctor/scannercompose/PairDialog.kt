@@ -1,6 +1,9 @@
 package com.github.sproctor.scannercompose
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -18,7 +21,7 @@ import com.zebra.scannercontrol.DCSSDKDefs
 import com.zebra.scannercontrol.SDKHandler
 
 @Composable
-fun PairDialog(sdkHandler: SDKHandler, hideDialog: () -> Unit) {
+fun PairingDialog(sdkHandler: SDKHandler, hideDialog: () -> Unit) {
     AlertDialog(
         onDismissRequest = hideDialog,
         confirmButton = {
@@ -55,6 +58,6 @@ fun PairDialog(sdkHandler: SDKHandler, hideDialog: () -> Unit) {
 fun DefaultPreview() {
     val context = LocalContext.current
     ScannerComposeTheme {
-        PairDialog(SDKHandler(context, true)) {}
+        PairingDialog(SDKHandler(context, true)) {}
     }
 }
