@@ -43,7 +43,6 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
 
         requestBluetoothPermission {
             Log.d(tag, "Permission granted")
-            initBarcodeScanner()
             loading = false
         }
 
@@ -58,7 +57,14 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
                     }
                 } else {
                     if (checkPermissions()) {
-                        ScannerContent(driverLicense, barcodeScanner, sdkHandler)
+                        ScannerContent(
+                            driverLicense = driverLicense,
+                            barcodeScanner = barcodeScanner,
+                            sdkHandler = sdkHandler,
+                            initScanner = {
+                                initBarcodeScanner()
+                            }
+                        )
                     } else {
                         Box(Modifier.fillMaxSize()) {
                             Text(
@@ -115,6 +121,8 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
     }
 
     private fun initBarcodeScanner() {
+        sdkHandler.dcssdkEnableAvailableScannersDetection(true)
+
         // Set scanner/barcode listener
         sdkHandler.dcssdkSetDelegate(object : IDcsSdkApiDelegate {
             override fun dcssdkEventBarcode(
@@ -166,8 +174,10 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
         )
 
         // Allow our scanner to be discovered (when scanning the pairing barcode)
+        sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_NORMAL)
+        sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_SNAPI)
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_LE)
-//            sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_USB_CDC)
+        sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_USB_CDC)
     }
 
     override fun onLastConnectedScannerDetect(p0: BluetoothDevice?): Boolean {
