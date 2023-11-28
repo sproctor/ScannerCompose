@@ -2,6 +2,7 @@ package com.github.sproctor.scannercompose
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -18,9 +19,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.github.sproctor.scannercompose.ui.theme.ScannerComposeTheme
 import com.zebra.barcode.sdk.sms.ConfigurationUpdateEvent
 import com.zebra.scannercontrol.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
     val tag = "MainActivity"
@@ -70,7 +74,7 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
 
     private fun checkPermissions(): Boolean {
         return permissions
-            .map { checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED}
+            .map { checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
             .reduce { acc, b -> acc && b }
     }
 
@@ -85,13 +89,13 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
                     when {
                         results.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                             val text =
-                                "You have to allow access to device's price location to use the Bluetooth barcode scanners"
+                                "You have to allow access to device's precise location"
                             Toast.makeText(this, text, Toast.LENGTH_LONG).show()
                         }
 
                         results.getOrDefault(Manifest.permission.BLUETOOTH_SCAN, false) -> {
                             val text =
-                                "You have to allow \"Nearby devices\" to use the Bluetooth printer"
+                                "You have to allow \"Nearby devices\""
                             Toast.makeText(this, text, Toast.LENGTH_LONG).show()
                         }
 
@@ -128,10 +132,10 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
                 Log.d(tag, "dcssdkEventCommunicationSessionEstablished($scanner)")
                 if (scanner == null) return
                 barcodeScanner = scanner
-                if (!reconnecting) {
+                lifecycleScope.launch(Dispatchers.IO) {
                     sdkHandler.dcssdkEnableAutomaticSessionReestablishment(true, scanner.scannerID)
-                    // Seriously Zebra, wtf?
-                    val sharedPreferences = getSharedPreferences("Prefs", 0)
+                    // Seriously Zebra, why are you messing with my preferences?
+                    val sharedPreferences = getSharedPreferences("Prefs", Context.MODE_PRIVATE)
                     val editor = sharedPreferences.edit()
                     editor.putString("hwSerialNumber", scanner.scannerHWSerialNumber)
                     editor.apply()
@@ -164,14 +168,11 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
         // Allow our scanner to be discovered (when scanning the pairing barcode)
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_LE)
 //            sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_USB_CDC)
-
-        // If there is already an active scanner, use it
-//            barcodeScanner = sdkHandler.dcssdkGetActiveScannersList()?.firstOrNull()
     }
 
     override fun onLastConnectedScannerDetect(p0: BluetoothDevice?): Boolean {
         Log.d(tag, "onLastConnectedScannerDetect not yet implemented")
-        return !reconnecting
+        return true
     }
 
     override fun onConnectingToLastConnectedScanner(p0: BluetoothDevice?) {
