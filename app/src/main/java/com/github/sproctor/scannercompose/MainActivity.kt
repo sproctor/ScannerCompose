@@ -93,18 +93,6 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
             val requestPermissionsLauncher =
                 registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
                     when {
-                        results.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                            val text =
-                                "You have to allow access to device's precise location"
-                            Toast.makeText(this, text, Toast.LENGTH_LONG).show()
-                        }
-
-                        results.getOrDefault(Manifest.permission.BLUETOOTH_SCAN, false) -> {
-                            val text =
-                                "You have to allow \"Nearby devices\""
-                            Toast.makeText(this, text, Toast.LENGTH_LONG).show()
-                        }
-
                         results.values.contains(false) -> {
                             val text =
                                 "Some permissions were denied and Bluetooth devices might not function properly"
@@ -199,9 +187,6 @@ val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
     listOf(
         Manifest.permission.BLUETOOTH_SCAN,
         Manifest.permission.BLUETOOTH_CONNECT,
-        // Remove these when Zebra Scanner SDK is fixed
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION,
     )
 } else {
     listOf(
