@@ -16,7 +16,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.viewinterop.AndroidView
-import com.github.sproctor.scannercompose.ui.theme.ScannerComposeTheme
 import com.zebra.scannercontrol.DCSSDKDefs
 import com.zebra.scannercontrol.SDKHandler
 
@@ -30,7 +29,9 @@ fun PairingDialog(sdkHandler: SDKHandler, hideDialog: () -> Unit) {
             }
         },
         text = {
-            BoxWithConstraints(modifier = Modifier.fillMaxWidth().padding(32.dp)) {
+            BoxWithConstraints(modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp)) {
                 val density = LocalDensity.current
                 val width = maxWidth
                 val height = min(maxWidth / 3, maxHeight)
@@ -56,8 +57,5 @@ fun PairingDialog(sdkHandler: SDKHandler, hideDialog: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    val context = LocalContext.current
-    ScannerComposeTheme {
-        PairingDialog(SDKHandler(context, true)) {}
-    }
+    PairingDialog(SDKHandler(LocalContext.current, true)) {}
 }

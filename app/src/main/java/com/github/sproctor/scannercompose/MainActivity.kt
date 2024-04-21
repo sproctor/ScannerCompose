@@ -2,6 +2,7 @@ package com.github.sproctor.scannercompose
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -20,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import com.github.sproctor.scannercompose.ui.theme.ScannerComposeTheme
 import com.zebra.barcode.sdk.sms.ConfigurationUpdateEvent
 import com.zebra.scannercontrol.*
 import kotlinx.coroutines.Dispatchers
@@ -47,31 +47,29 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
         }
 
         setContent {
-            ScannerComposeTheme {
-                if (loading) {
+            if (loading) {
+                Box(Modifier.fillMaxSize()) {
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = "Loading"
+                    )
+                }
+            } else {
+                if (checkPermissions()) {
+                    ScannerContent(
+                        driverLicense = driverLicense,
+                        barcodeScanner = barcodeScanner,
+                        sdkHandler = sdkHandler,
+                        initScanner = {
+                            initBarcodeScanner()
+                        }
+                    )
+                } else {
                     Box(Modifier.fillMaxSize()) {
                         Text(
                             modifier = Modifier.align(Alignment.Center),
-                            text = "Loading"
+                            text = "Permission denied"
                         )
-                    }
-                } else {
-                    if (checkPermissions()) {
-                        ScannerContent(
-                            driverLicense = driverLicense,
-                            barcodeScanner = barcodeScanner,
-                            sdkHandler = sdkHandler,
-                            initScanner = {
-                                initBarcodeScanner()
-                            }
-                        )
-                    } else {
-                        Box(Modifier.fillMaxSize()) {
-                            Text(
-                                modifier = Modifier.align(Alignment.Center),
-                                text = "Permission denied"
-                            )
-                        }
                     }
                 }
             }
@@ -109,6 +107,7 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
     }
 
     private fun initBarcodeScanner() {
+        sdkHandler.setiDcsScannerEventsOnReLaunch(this)
         sdkHandler.dcssdkEnableAvailableScannersDetection(true)
 
         // Set scanner/barcode listener
@@ -162,9 +161,12 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
         )
 
         // Allow our scanner to be discovered (when scanning the pairing barcode)
-        sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_NORMAL)
+        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        if (bluetoothManager.adapter?.isEnabled == true) {
+            sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_NORMAL)
+            sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_LE)
+        }
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_SNAPI)
-        sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_LE)
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_USB_CDC)
     }
 
