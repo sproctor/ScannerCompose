@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
         super.onCreate(savedInstanceState)
 
         sdkHandler = SDKHandler(this, true)
+        sdkHandler.setiDcsScannerEventsOnReLaunch(this)
 
         var loading by mutableStateOf(true)
 
