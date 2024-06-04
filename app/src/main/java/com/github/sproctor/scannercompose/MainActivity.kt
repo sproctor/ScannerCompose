@@ -162,11 +162,11 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
         )
 
         // Allow our scanner to be discovered (when scanning the pairing barcode)
-        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        if (bluetoothManager.adapter?.isEnabled == true) {
+//        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+//        if (bluetoothManager.adapter?.isEnabled == true) {
             sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_NORMAL)
             sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_LE)
-        }
+//        }
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_SNAPI)
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_USB_CDC)
     }
