@@ -2,8 +2,6 @@ package com.github.sproctor.scannercompose
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -20,11 +18,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import com.zebra.barcode.sdk.sms.ConfigurationUpdateEvent
 import com.zebra.scannercontrol.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
     val tag = "MainActivity"
@@ -32,18 +27,16 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
     private lateinit var sdkHandler: SDKHandler
     private var barcodeScanner by mutableStateOf<DCSScannerInfo?>(null)
     private var driverLicense by mutableStateOf<DriverLicense?>(null)
-    private var reconnecting = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        sdkHandler = SDKHandler(this, true)
-        sdkHandler.setiDcsScannerEventsOnReLaunch(this)
 
         var loading by mutableStateOf(true)
 
         requestBluetoothPermission {
             Log.d(tag, "Permission granted")
+            sdkHandler = SDKHandler(this, true)
+            initBarcodeScanner()
             loading = false
         }
 
@@ -62,7 +55,7 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
                         barcodeScanner = barcodeScanner,
                         sdkHandler = sdkHandler,
                         initScanner = {
-                            initBarcodeScanner()
+
                         }
                     )
                 } else {
@@ -128,14 +121,6 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
                 Log.d(tag, "dcssdkEventCommunicationSessionEstablished($scanner)")
                 if (scanner == null) return
                 barcodeScanner = scanner
-                lifecycleScope.launch(Dispatchers.IO) {
-                    sdkHandler.dcssdkEnableAutomaticSessionReestablishment(true, scanner.scannerID)
-                    // Seriously Zebra, why are you messing with my preferences?
-                    val sharedPreferences = getSharedPreferences("Prefs", Context.MODE_PRIVATE)
-                    val editor = sharedPreferences.edit()
-                    editor.putString("hwSerialNumber", scanner.scannerHWSerialNumber)
-                    editor.apply()
-                }
             }
 
             override fun dcssdkEventCommunicationSessionTerminated(scannerId: Int) {
@@ -162,27 +147,20 @@ class MainActivity : ComponentActivity(), IDcsScannerEventsOnReLaunch {
         )
 
         // Allow our scanner to be discovered (when scanning the pairing barcode)
-//        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-//        if (bluetoothManager.adapter?.isEnabled == true) {
-            sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_NORMAL)
-            sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_LE)
-//        }
+        sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_NORMAL)
+        sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_BT_LE)
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_SNAPI)
         sdkHandler.dcssdkSetOperationalMode(DCSSDKDefs.DCSSDK_MODE.DCSSDK_OPMODE_USB_CDC)
     }
 
     override fun onLastConnectedScannerDetect(p0: BluetoothDevice?): Boolean {
-        Log.d(tag, "onLastConnectedScannerDetect not yet implemented")
         return true
     }
 
     override fun onConnectingToLastConnectedScanner(p0: BluetoothDevice?) {
-        Log.d(tag, "onConnectingToLastConnectedScanner not yet implemented")
-        reconnecting = true
     }
 
     override fun onScannerDisconnect() {
-        Log.d(tag, "onScannerDisconnect not yet implemented")
     }
 }
 

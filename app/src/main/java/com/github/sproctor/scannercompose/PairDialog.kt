@@ -25,7 +25,7 @@ fun PairingDialog(sdkHandler: SDKHandler, hideDialog: () -> Unit) {
         onDismissRequest = hideDialog,
         confirmButton = {
             Button(onClick = hideDialog) {
-                Text("CANCEL")
+                Text("Cancel")
             }
         },
         text = {

@@ -19,49 +19,37 @@ fun ScannerContent(
     initScanner: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        var isInitialized by remember {
-            mutableStateOf(false)
-        }
-        if (isInitialized) {
-            if (barcodeScanner != null) {
-                if (driverLicense != null) {
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = "Family name: ${driverLicense.familyName}\n" +
-                                "First name: ${driverLicense.firstName}"
-                    )
-                } else {
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = "Scan license"
-                    )
-                }
-            } else {
-                var showDialog by remember {
-                    mutableStateOf(false)
-                }
-                Button(
+        if (barcodeScanner != null) {
+            if (driverLicense != null) {
+                Text(
                     modifier = Modifier.align(Alignment.Center),
-                    onClick = { showDialog = true }
-                ) {
-                    Text("Pair")
-                }
-                if (showDialog) {
-                    PairingDialog(sdkHandler = sdkHandler) {
-                        showDialog = false
-                    }
-                }
+                    text = "Family name: ${driverLicense.familyName}\n" +
+                            "First name: ${driverLicense.firstName}"
+                )
+            } else {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "Scan license"
+                )
             }
         } else {
-            val scope = rememberCoroutineScope()
-            Button(onClick = {
-                scope.launch {
-                    initScanner()
-                    isInitialized = true
-                }
-            }) {
-                Text("Start")
+            var showDialog by remember {
+                mutableStateOf(false)
             }
+            Button(
+                modifier = Modifier.align(Alignment.Center),
+                onClick = { showDialog = true }
+            ) {
+                Text("Pair")
+            }
+            if (showDialog) {
+                PairingDialog(sdkHandler = sdkHandler) {
+                    showDialog = false
+                }
+            }
+        }
+        LaunchedEffect(Unit) {
+            initScanner()
         }
     }
 }
